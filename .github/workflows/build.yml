@@ -47,17 +47,15 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Initialize Android SDK environment & Install missing Aidl / Build-Tools
+    - name: Set up Android SDK Manually
       run: |
-        # Buildozer'ın SDK'yı otomatik kurması için bir kez tetikliyoruz veya doğrudan sdkmanager ile eksikleri kuruyoruz
+        mkdir -p $HOME/.buildozer/android/platform/android-sdk/cmdline-tools
+        wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O /tmp/cmdtools.zip
+        unzip -q /tmp/cmdtools.zip -d /tmp/
+        mv /tmp/cmdline-tools $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest
         export ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk
-        mkdir -p $ANDROID_HOME
-        
-        # Eğer sdkmanager zaten varsa aidl ve build-tools 33'ü zorla kuruyoruz
-        if [ -d "$HOME/.buildozer/android/platform/android-sdk/cmdline-tools" ]; then
-          yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.2" "platforms;android-33" || true
-        fi
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
     - name: Build APK with Buildozer
       run: |
